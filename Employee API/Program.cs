@@ -1,5 +1,7 @@
 
 using Employee_API.Contexts;
+using Employee_API.Repos.Implementation;
+using Employee_API.Repos.Interfaces;
 using Employee_API.Services.Implementation;
 using Employee_API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,7 @@ namespace Employee_API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
