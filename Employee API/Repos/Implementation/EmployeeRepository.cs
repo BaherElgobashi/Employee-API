@@ -1,32 +1,42 @@
-﻿using Employee_API.Models;
+﻿using Employee_API.Contexts;
+using Employee_API.Models;
 using Employee_API.Repos.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Employee_API.Repos.Implementation
 {
     public class EmployeeRepository : IEmployeeRepository
     {
-        public Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        private readonly ApplicationDbContext _context;
+
+        public EmployeeRepository(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+        }
+        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        {
+            var employees = await _context.Employees.ToListAsync();
+            return employees;
         }
 
-        public Task<Employee> GetEmployeeByIdAsync(int id)
+        public async Task<Employee> GetEmployeeByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var employee = await _context.Employees.FindAsync(id);
+            return employee;
         }
         public void AddEmployee(Employee employee)
         {
-            throw new NotImplementedException();
+            _context.Employees.Add(employee);
         }
 
         public void UpdateEmployee(Employee employee)
         {
-            throw new NotImplementedException();
+            _context.Employees.Update(employee);
         }
 
         public void DeleteEmployee(Employee employee)
         {
-            throw new NotImplementedException();
+            _context.Employees.Remove(employee);
         }
 
       
