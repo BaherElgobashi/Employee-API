@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Folder Include="Repos\Interfaces\" />
+    <Folder Include="Repos\Implementation\" />
   </ItemGroup>
 
 </Project>
