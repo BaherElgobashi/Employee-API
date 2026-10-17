@@ -11,33 +11,58 @@ namespace Employee_API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
+        private readonly ILogger<EmployeeController> _logger;   
 
-        public EmployeeController(IEmployeeService employeeService)
+        public EmployeeController(IEmployeeService employeeService , ILogger<EmployeeController>logger)
         {
             _employeeService = employeeService;
+            _logger = logger;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllEmployees()
+        public async Task<IActionResult> GetAllEmployees(CancellationToken cancellationToken )
         {
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            _logger.LogInformation("Retrieving all employees from database.");
+            var employees = await _employeeService.GetAllEmployeesAsync(cancellationToken);
             return Ok(employees);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetEmployeeById(int id)
+        public async Task<IActionResult> GetEmployeeById(int id,CancellationToken cancellationToken)
         {
-            var employee = await _employeeService.GetEmployeeByIdAsync(id);
+            _logger.LogInformation("Fetching employee with ID: {EmployeeId}", id);
+            var employee = await _employeeService.GetEmployeeByIdAsync(id , cancellationToken);
             if (employee is null)
+            {
+                _logger.LogWarning("Employee with ID: {EmployeeId} was not found", id);
                 return NotFound($"Employee With {id} is not Found.");
+            }
+                
             return Ok(employee);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] EmployeeDto employeeDto, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to create employee: {EmployeeName}", employeeDto.Name);
+            var createdEmployee = await _employeeService.CreateEmployeeAsync(employeeDto, cancellationToken);
+            _logger.LogInformation("Employee created successfully with ID: {EmployeeId}", createdEmployee.Id);
+
+            return CreatedAtAction(nameof(GetEmployeeById), new { id = createdEmployee.Id }, createdEmployee);
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] EmployeeDto employeeDto, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Attempting to create employee: {EmployeeName}", employeeDto.Name);
             var isUpdated = await _employeeService.UpdateEmployeeAsync(id, employeeDto, cancellationToken);
             if (!isUpdated)
+            {
+
+                _logger.LogWarning("Failed to update. Employee with ID: {EmployeeId} does not exist", id);
                 return NotFound($"Employee with Id {id} was not found.");
+
+            }
+                
 
             return NoContent();
         }
@@ -46,10 +71,14 @@ namespace Employee_API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Attempting to delete employee with ID: {EmployeeId}", id);
             var isDeleted = await _employeeService.DeleteEmployeeAsync(id, cancellationToken);
             if (!isDeleted)
+            {
+                _logger.LogWarning("Failed to delete. Employee with ID: {EmployeeId} does not exist", id);
                 return NotFound($"Employee with Id {id} was not found.");
-
+            }
+            _logger.LogInformation("Employee with ID: {EmployeeId} deleted successfully", id);
             return NoContent();
         }
 
@@ -57,7 +86,8 @@ namespace Employee_API.Controllers
         [HttpGet("performance-test")]
         public async Task<IActionResult> PerformanceTest()
         {
-            
+            _logger.LogInformation("Starting performance benchmark test (Sequential vs Parallel)...");
+
             async Task SimulateTaskAsync(int delayMs) => await Task.Delay(delayMs);
 
             var stopwatch = new Stopwatch();
@@ -76,7 +106,7 @@ namespace Employee_API.Controllers
             await Task.WhenAll(task1, task2);
             stopwatch.Stop();
             long parallelTime = stopwatch.ElapsedMilliseconds;
-
+            _logger.LogInformation("Benchmark finished. Sequential: {Sequential}ms | Parallel: {Parallel}ms", sequentialTime, parallelTime);
             return Ok(new
             {
                 Sequential_Time_Ms = sequentialTime,
