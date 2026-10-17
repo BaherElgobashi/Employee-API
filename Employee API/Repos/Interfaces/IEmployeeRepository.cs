@@ -4,14 +4,16 @@ namespace Employee_API.Repos.Interfaces
 {
     public interface IEmployeeRepository
     {
-        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
+        Task<IEnumerable<Employee>> GetAllEmployeesAsync(CancellationToken cancellationToken = default);
 
-        Task<Employee> GetEmployeeByIdAsync(int id);
+        Task<Employee> GetEmployeeByIdAsync(int id , CancellationToken cancellationToken = default);
 
-        void AddEmployee(Employee employee);
+        Task AddEmployeeAsync(Employee employee , CancellationToken cancellationToken = default);
 
         void UpdateEmployee(Employee employee);
 
         void DeleteEmployee(Employee employee);
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
