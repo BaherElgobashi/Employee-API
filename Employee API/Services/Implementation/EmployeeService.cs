@@ -5,6 +5,12 @@ namespace Employee_API.Services.Implementation
 {
     public class EmployeeService : IEmployeeService
     {
+        private readonly IEmployeeService _employeeService;
+
+        public EmployeeService(IEmployeeService employeeService)
+        {
+            _employeeService = employeeService;
+        }
         public Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
